@@ -14,26 +14,25 @@ class BinarySearchTree {
   }
 
   add(data, tree = this._root) {
-    let node;
-    if (data instanceof Node) node = data;
-    else node = new Node(data);
+    let node = data instanceof Node ? data : new Node(data);
 
     if (!this._root) {
       this._root = node;
       return;
     }
+
     if (node.data > tree.data && tree.right === null) {
       tree.right = node;
       return;
     } else if (node.data > tree.data && tree.right !== null) {
-      this.add(node.data, tree.right);
+      this.add(node, tree.right);
     }
 
     if (node.data < tree.data && tree.left === null) {
       tree.left = node;
       return;
     } else if (node.data < tree.data && tree.left !== null) {
-      this.add(node.data, tree.left);
+      this.add(node, tree.left);
     }
   }
 
@@ -45,10 +44,14 @@ class BinarySearchTree {
     if (tree.data === data) return tree;
     if (tree.left === null && tree.right === null) return null;
 
-    if (data > tree.data && tree.right !== null)
+    if (data > tree.data && tree.right !== null) {
+      this.parentNode = tree;
       return this.find(data, tree.right);
-    if (data < tree.data && tree.left !== null)
+    }
+    if (data < tree.data && tree.left !== null) {
+      this.parentNode = tree;
       return this.find(data, tree.left);
+    }
     return null;
   }
 
@@ -57,15 +60,20 @@ class BinarySearchTree {
     if (!toRemove) return;
 
     if (toRemove.right === null && toRemove.left === null) {
-      toRemove = null;
+      !this.parentNode
+        ? (this._root.data = null)
+        : this.parentNode.right === toRemove
+        ? (this.parentNode.right = null)
+        : (this.parentNode.left = null);
       return;
     }
 
     if (toRemove.right !== null) {
       let newNode = toRemove.right;
-      this.add(toRemove.left, newNode.left);
-      toRemove.data = newNode.data;
+
+      if (toRemove.left) this.add(toRemove.left, newNode);
       toRemove.left = newNode.left;
+      toRemove.data = newNode.data;
       toRemove.right = newNode.right;
     } else if (toRemove.right === null) {
       toRemove.data = toRemove.left.data;
